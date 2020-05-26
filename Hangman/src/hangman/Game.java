@@ -1,330 +1,347 @@
 package hangman;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Scanner;
-import java.util.concurrent.ThreadLocalRandom;
+
+
+import hangman.CustomExceptions.CategoryValidationException;
+import hangman.CustomExceptions.GuessValidationException;
+import hangman.CustomExceptions.NameValidationException;
+import hangman.CustomExceptions.OptionValidationException;
 
 public class Game {
 
-	{
-
-		WelcomeScreen();
-
-	}
-
-	public int hangmanState = 0;
-	public char[] lineString;
-	public boolean end = false;
-
-	private Player player = NewPlayer();
-	private boolean running = false;
-	private String word;
-
-	private ArrayList<String> selectedList;
-
-	private ArrayList<String> things = new ArrayList<String>(
-			Arrays.asList("Broom", "Stadium", "Motorcyle", "Papertowel", "Spoon", "Basket", "Telephone"));
-
-	private ArrayList<String> places = new ArrayList<String>(
-			Arrays.asList("Alabama", "Manchester", "Danzig", "Ljubljana", "Albuquerqe", "Bangkok", "Washington"));
-
-	private ArrayList<String> people = new ArrayList<String>(
-			Arrays.asList("Bethoveen", "Maradona", "Matisse", "Picasso", "Michelangelo", "Churchill", "Gandhi"));
-
-	private ArrayList<String> animals = new ArrayList<String>(
-			Arrays.asList("Stingray", "Monkey", "Parrot", "Tortouise", "Dolphin", "Cheetah", "Alligator"));
-
-	private void WelcomeScreen() {
-
-		System.out.println("------------------------------------------------------------------------");
-		System.out.println("-------------------------------HANGMAN----------------------------------");
-		System.out.println("------------------------------------------------------------------------");
-		System.out.println("");
-		System.out.println("Welcome to hangman!");
-		System.out.println("");
-		System.out.println("");
-
-	}
-
-	private Player NewPlayer() {
-
-		System.out.println("Please enter your name: ");
-
-		@SuppressWarnings("resource")
-		Scanner sc = new Scanner(System.in);
-		String name = sc.nextLine();
-
-		while (name.length() < 3 || name.length() > 16 || name == null) {
-			System.out.println("Your name should be 3 - 15 char. long!");
-			System.out.println("Please re-enter your name!");
-			name = sc.nextLine();
-		}
-
-		Player player = new Player(name);
-		return player;
-
-	}
-
-	public void CategorySelect() {
-		System.out.println();
-		System.out.println("Alright  >> " + this.getPlayer().getName() + " <<  " + "lets play!");
-		System.out.println();
-		System.out.println("Enter the >> number << of word category you wish to play: ");
-		System.out.println();
-		System.out.println(" >> 1 << Things");
-		System.out.println();
-		System.out.println(" >> 2 << Places");
-		System.out.println();
-		System.out.println(" >> 3 << People");
-		System.out.println();
-		System.out.println(" >> 4 << Animals");
-		System.out.println();
-
-		int category = Integer.parseInt(Main.sc.nextLine());
-		String categoryName;
-
-		while (category < 1 || category > 4) {
-			System.out.println("Enter the >> number << of a category you wish to play: ");
-			System.out.println("Categories are following: ");
-			System.out.println();
-			System.out.println(" >> 1 << Things");
-			System.out.println();
-			System.out.println(" >> 2 << Places");
-			System.out.println();
-			System.out.println(" >> 3 << People");
-			System.out.println();
-			System.out.println(" >> 4 << Animals");
-			System.out.println();
-
-			category = Integer.parseInt(Main.sc.nextLine());
-		}
-
-		switch (category) {
-		case 1:
-			this.selectedList = things;
-			categoryName = "Things";
-			break;
-		case 2:
-			this.selectedList = places;
-			categoryName = "Places";
-			break;
-		case 3:
-			this.selectedList = people;
-			categoryName = "People";
-			break;
-		case 4:
-			this.selectedList = animals;
-			categoryName = "Animals";
-			break;
-		default:
-			this.selectedList = things;
-			categoryName = "Things";
-		}
-
-		System.out.println("You have selected >" + categoryName + "< category!");
-
-	}
-
-	public void WordSelect() {
-		String word = this.selectedList.get(ThreadLocalRandom.current().nextInt(selectedList.size()));
-		this.setWord(word.toUpperCase());
-		System.out.println();
-		System.out.println("Your word is selected! ");
-		System.out.println("");
-		System.out.println("");
-
-		lineString = new char[getWord().length()];
-		for (int i = 0; i < this.getWord().length(); i++) {
-			lineString[i] = '_';
-		}
-
-		PrintLineString();
-		System.out.println();
-		System.out.println();
-		DrawHangman();
+ private Player player;
 
-	}
+ public ArrayList < String > categories = new ArrayList < String > ();
 
-	public void PrintLineString() {
+ public SecretWord secretWord = new SecretWord();
 
-		for (int i = 0; i < this.lineString.length; i++) {
-			System.out.print(lineString[i]);
-			System.out.print(' ');
-		}
+ public boolean wordEnd = false;
+ public boolean newWord = true;
 
-	}
 
-	public void DrawHangman() {
 
-		System.out.println();
-		System.out.println();
 
-		switch (this.hangmanState) {
-		case 0:
-			System.out.println(" O");
-			System.out.println("-|-");
-			System.out.println("| |");
-			break;
+ 
+ 
+ public void validateNewPlayer(String name)
+ throws NameValidationException {
+  if (name.length() < 3 || name.length() > 16 || name == null) {
+   throw new NameValidationException("Your name should be 3 - 15 char. long!");
+  }
+ }
+ 
+ public void validateCategory(int choice, ArrayList < String > categories)
+ throws CategoryValidationException {
+  if (choice < 0 || choice >= categories.size()) {
+   throw new CategoryValidationException("There is no category under that number!");
+  }
+ }
+ 
+ public void validateGuess(String guess)
+ throws GuessValidationException {
+  if (guess.length() != 1 || !(guess.matches("^[A-Z]*$")) || guess == null) {
+   throw new GuessValidationException("Your guess is not a A-Z character!");
+  }
+ }
 
-		case 1:
-			System.out.println(" O");
-			System.out.println("-|-");
-			System.out.println("  |");
-			break;
-
-		case 2:
-			System.out.println(" O");
-			System.out.println("-|-");
-			break;
-
-		case 3:
-			System.out.println(" O");
-			System.out.println("-|");
-			break;
-
-		case 4:
-			System.out.println(" O");
-			System.out.println(" |");
-			break;
-
-		case 5:
-			System.out.println(" O");
-			break;
-
-		case 6:
-			System.out.println(" X");
-			break;
-		}
-
-	}
-
-	public void Guess() {
-
-		System.out.println();
-		System.out.println();
-		System.out.println("************************************************************************");
-		System.out.println("Guess a letter: ");
-		String guess = Main.sc.nextLine();
-
-		while (guess.length() != 1 && !(guess.matches("[a-zA-Z]*"))) {
-			System.out.println("Your guess is invalid, guess a LETTER: ");
-			guess = Main.sc.nextLine();
-		}
-
-		char guess_char = guess.toUpperCase().charAt(0); // Extract char from guess string
-		System.out.println("************************************************************************");
-		System.out.println();
-
-		// Check word for this guess char
-		if (this.word.contains(guess.toUpperCase())) {
-			for (int i = 0; i < this.getWord().length(); i++) {
-				char word_char = this.getWord().charAt(i); // char from word at this position
-
-				if (guess_char == word_char) {
-
-					lineString[i] = guess_char;
-
-				}
-
-			}
-		}
-
-		else {
-			hangmanState++;
-
-		}
-
-		System.out.println();
-		System.out.println();
-
-		PrintLineString();
-
-		DrawHangman();
-
-		System.out.println();
-		System.out.println();
-
-		CheckForEnd();
-
-	}
-
-	public void CheckForEnd() {
-		boolean endFlag = true;
-		for (char c : lineString) {
-			if (c == '_')
-				endFlag = false;
-		}
-
-		this.end = endFlag;
-
-	}
-
-	public void EvaluateEnd() {
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println();
-		System.out.println("########################################################################");
-
-		switch (hangmanState) {
-		case (0):
-			System.out.println("PERFECT SCORE! YOU HAVE WON!" + " +150");
-			player.setScore(150);
-			break;
-		case (1):
-			System.out.println("YOU HAVE WON!" + " +100");
-			player.setScore(100);
-			break;
-		case (2):
-			System.out.println("YOU HAVE WON!" + " +80");
-			player.setScore(80);
-			break;
-		case (3):
-			System.out.println("YOU HAVE WON!" + " +60");
-			player.setScore(60);
-			break;
-		case (4):
-			System.out.println("YOU HAVE WON!" + " +40");
-			player.setScore(40);
-			break;
-		case (5):
-			System.out.println("YOU HAVE WON!" + " +20");
-			player.setScore(20);
-			break;
-		case (6):
-			System.out.println("You are hanged! x__x ");
-			player.setScore(0);
-			break;
-		default:
-			System.out.println("DEFAULT");
-		}
-
-		System.out.println("########################################################################");
-
-	}
-
-	public Player getPlayer() {
-		return player;
-	}
-
-	public void setPlayer(Player player) {
-		this.player = player;
-	}
-
-	public boolean isRunning() {
-		return running;
-	}
-
-	public void setRunning(boolean running) {
-		this.running = running;
-	}
-
-	public String getWord() {
-		return word;
-	}
-
-	public void setWord(String word) {
-		this.word = word;
-	}
+ 
+ public void validateOption(int option)
+ throws OptionValidationException {
+  if (option < 0 || option > 2) {
+   throw new OptionValidationException("There is no option under that number!");
+  }
+ }
+
+
+ public void gameExecution() {
+
+	  welcomeScreen();
+	  newPlayer();
+	  gameCycle();
+
+
+	 }
+ 
+
+ private void welcomeScreen() {
+
+  Print.printStringRow(" ", 2);
+  Print.printTitleScreen();
+  Print.printStringRow(" ", 2);
+
+ }
+
+
+
+ private void newPlayer() {
+
+  boolean isValid = false;
+  String name = null;
+
+  while (isValid == false) {
+   try {
+    System.out.println("Please enter your name: ");
+    name = Main.sc.nextLine();
+    validateNewPlayer(name);
+    isValid = true;
+   } catch (NameValidationException nve) {
+    isValid = false;
+   }
+
+  }
+
+
+  Player player = new Player(name);
+  this.player = player;
+  Main.db.insertPlayer(name);
+
+  Print.printStringRow(" ", 2);
+  System.out.println("Hi," + this.getPlayer().getName() + "!");
+
+
+ }
+
+
+
+ public void gameCycle() {
+  while (newWord != false) {
+   categorySelect();
+   loadSecretWord();
+   guessRepeat();
+   evaluateWordEnd();
+   optionSelect();
+  }
+ }
+
+
+
+
+ public void categorySelect() {
+
+  if (this.categories.isEmpty()) {
+   this.categories = Main.db.getCategories();
+  }
+
+  Print.printStringRow(" ", 2);
+  System.out.println("Start by choosing a category: ");
+  Print.printArrayList(categories);
+  Print.printStringRow(" ", 2);
+  System.out.println("Enter the number of a category you wish to play: ");
+
+  int choice = 0;
+  boolean isNumber = false;
+  boolean isValid = false;
+
+
+
+  while (isValid == false || isNumber == false) {
+   try {
+    choice = Integer.parseInt(Main.sc.nextLine());
+    isNumber = true;
+
+    try {
+     validateCategory(choice, categories);
+     isValid = true;
+     Print.printStringRow(" ", 2);
+
+    } catch (CategoryValidationException cve) {
+     isValid = false;
+    }
+
+   } catch (NumberFormatException ex) {
+    isNumber = false;
+    Print.printStringRow(" ", 2);
+    System.out.println("You have not entered a valid number!");
+    System.out.println("Enter the number of a category you wish to play: ");
+   }
+
+  }
+
+  secretWord.category = this.categories.get(choice);
+  Print.printStringRow(" ", 2);
+  System.out.println("Selected category: " + secretWord.category.toUpperCase());
+
+
+ }
+ public void loadSecretWord() {
+  Print.printStringRow(" ", 2);
+  secretWord.setUnhiddenText(Main.db.getSecretWord(secretWord.category).toUpperCase());
+  secretWord.formHiddenText();
+  System.out.println("Secret word is loaded!");
+  Print.printStringRow(" ", 2);
+  Print.printTextAndHangman(secretWord);
+
+
+ }
+
+ public void guessRepeat() {
+  while (wordEnd != true) {
+   takeGuess();
+   Print.printTextAndHangman(secretWord);
+   checkForWordEnd();
+
+  }
+ }
+
+
+
+
+ public void takeGuess() {
+
+  boolean isValid = false;
+  String guess = null;
+
+  while (isValid == false)
+   try {
+    Print.printStringRow(" ", 2);
+    System.out.println("Take a guess: ");
+    guess = Main.sc.nextLine();
+    guess = guess.toUpperCase();
+    validateGuess(guess);
+    isValid = true;
+
+   }
+  catch (GuessValidationException gve) {
+   isValid = false;
+  }
+
+  char guessChar = guess.toUpperCase().charAt(0); 
+  
+  if (secretWord.getUnhiddenText().contains(guess.toUpperCase())) {
+
+   for (int i = 0; i < secretWord.hiddenText.length; i++) {
+    if (guessChar == secretWord.getUnhiddenText().charAt(i)) {
+     secretWord.hiddenText[i] = guessChar;
+    }
+
+   }
+  } else {
+
+   secretWord.hangmanState++;
+  }
+  secretWord.guess++;
+
+
+ }
+
+ public void checkForWordEnd() {
+  boolean endFlag = true;
+
+  if (secretWord.hangmanState == 6) {
+   endFlag = true;
+  } else {
+   for (char c: secretWord.hiddenText) {
+    if (c == '_') {
+     endFlag = false;
+     break;
+    }
+   }
+
+  }
+
+  this.wordEnd = endFlag;
+
+
+
+ }
+
+ public void evaluateWordEnd() {
+
+  Print.printStringRow(" ", 2);
+  Print.printStringRow("-", 2, 80);
+  Print.printStringRow(" ", 2);
+  if (secretWord.hangmanState != 6) {
+   System.out.println("You have guessed the word!");
+  } else {
+   System.out.println("YOU ARE HANGED!");
+  }
+  player.setScore(secretWord.hangmanState);
+
+  Print.printStringRow(" ", 2);
+  System.out.println("YOUR TOTAL SCORE: ");
+  System.out.println(player.getScore());
+  Main.db.updateScore(player.getScore(), this.getPlayer().getName());
+  Print.printStringRow(" ", 2);
+  Print.printStringRow("-", 2, 80);
+  Print.printStringRow(" ", 2);
+  Print.printStringRow(" ", 2);
+  Print.printStringRow(" ", 2);
+
+
+ }
+
+
+
+ public void optionSelect() {
+
+
+  int option = 0;
+  boolean isNumber = false;
+  boolean isValid = false;
+
+  while (isValid == false || isNumber == false) {
+   try {
+    Print.printStringRow(" ", 2);
+    System.out.println("Choose one of the following options: ");
+    Print.printStringRow(" ", 2);
+    System.out.println("0 Guess a new word");
+    System.out.println("1 View highscores");
+    System.out.println("2 Exit the program");
+    Print.printStringRow(" ", 2);
+
+    try {
+     option = Integer.parseInt(Main.sc.nextLine());
+     validateOption(option);
+     isValid = true;
+    } catch (OptionValidationException ove) {
+     isValid = false;
+    }
+    isNumber = true;
+   } catch (NumberFormatException ex) {
+    isNumber = false;
+    Print.printStringRow(" ", 2);
+    System.out.println("You have not entered a valid number!");
+
+   }
+  }
+
+
+  switch (option) {
+   case 0:
+    setDefaultValues();
+    this.newWord = true;
+    Print.printStringRow(" ", 2);
+    break;
+   case 1:
+    Print.printHighscoresList(Main.db.get10Highscores());
+    optionSelect();
+    break;
+   case 2:
+    this.newWord = false;
+    Print.printCreditsScreen();
+    break;
+  }
+
+
+
+ }
+
+ public void setDefaultValues() {
+
+  wordEnd = false;
+  newWord = true;
+  this.secretWord = new SecretWord();
+  
+ }
+
+ public Player getPlayer() {
+  return player;
+ }
+
+ public void setPlayer(Player player) {
+  this.player = player;
+ }
+
+
 
 }
